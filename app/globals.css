@@ -1,0 +1,180 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 150 20% 4%;
+    --foreground: 142 100% 85%;
+    --card: 150 15% 7%;
+    --card-foreground: 142 100% 85%;
+    --popover: 150 15% 7%;
+    --popover-foreground: 142 100% 85%;
+    --primary: 142 100% 50%;
+    --primary-foreground: 150 20% 4%;
+    --secondary: 150 10% 12%;
+    --secondary-foreground: 142 70% 70%;
+    --muted: 150 8% 14%;
+    --muted-foreground: 142 20% 50%;
+    --accent: 142 80% 35%;
+    --accent-foreground: 142 100% 90%;
+    --destructive: 0 80% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 142 30% 18%;
+    --input: 142 20% 15%;
+    --ring: 142 100% 50%;
+    --radius: 0.75rem;
+
+    --glow-primary: 0 0 20px hsla(142, 100%, 50%, 0.3), 0 0 60px hsla(142, 100%, 50%, 0.1);
+    --glow-strong: 0 0 30px hsla(142, 100%, 50%, 0.5), 0 0 80px hsla(142, 100%, 50%, 0.2);
+    --glass-bg: hsla(150, 15%, 7%, 0.7);
+    --glass-border: hsla(142, 100%, 50%, 0.15);
+    --glass-shine: linear-gradient(135deg, hsla(142, 100%, 50%, 0.1) 0%, transparent 50%, hsla(142, 100%, 50%, 0.05) 100%);
+  }
+
+  .light {
+    --background: 140 10% 95%;
+    --foreground: 150 30% 10%;
+    --card: 140 10% 98%;
+    --card-foreground: 150 30% 10%;
+    --popover: 140 10% 98%;
+    --popover-foreground: 150 30% 10%;
+    --primary: 142 80% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 140 10% 90%;
+    --secondary-foreground: 150 20% 20%;
+    --muted: 140 8% 88%;
+    --muted-foreground: 150 10% 40%;
+    --accent: 142 60% 40%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 80% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 140 10% 82%;
+    --input: 140 10% 85%;
+    --ring: 142 80% 35%;
+
+    --glow-primary: 0 0 15px hsla(142, 80%, 35%, 0.2);
+    --glow-strong: 0 0 25px hsla(142, 80%, 35%, 0.3);
+    --glass-bg: hsla(140, 10%, 98%, 0.8);
+    --glass-border: hsla(142, 80%, 35%, 0.2);
+    --glass-shine: linear-gradient(135deg, hsla(142, 80%, 35%, 0.08) 0%, transparent 50%);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply bg-background;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+}
+
+@layer components {
+  .glass-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    background-image: var(--glass-shine);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .glow-text {
+    text-shadow: 0 0 10px hsla(142, 100%, 50%, 0.6), 0 0 40px hsla(142, 100%, 50%, 0.2);
+  }
+
+  .glow-border {
+    box-shadow: var(--glow-primary);
+  }
+
+  .glow-border-strong {
+    box-shadow: var(--glow-strong);
+  }
+
+  .scanline {
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      hsla(142, 100%, 50%, 0.03) 2px,
+      hsla(142, 100%, 50%, 0.03) 4px
+    );
+    pointer-events: none;
+  }
+
+  .terminal-cursor {
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  @keyframes glitch {
+    0%, 100% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(2px, -2px); }
+    60% { transform: translate(-1px, -1px); }
+    80% { transform: translate(1px, 1px); }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: var(--glow-primary); }
+    50% { box-shadow: var(--glow-strong); }
+  }
+
+  .animate-glitch {
+    animation: glitch 0.3s ease-in-out;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-corner {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
+}
+
+/* Canvas drawing area: fill viewport on mobile, cap on desktop. */
+.canvas-frame {
+  height: min(70vh, 70dvh);
+  min-height: 320px;
+  max-height: 80vh;
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+@media (max-width: 640px) {
+  .canvas-frame {
+    height: min(60vh, 60dvh);
+  }
+}
