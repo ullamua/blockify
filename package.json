@@ -2,19 +2,13 @@
   "name": "@workspace/blockify",
   "version": "0.0.0",
   "private": true,
+  "packageManager": "pnpm@10.26.1",
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p ${PORT:-18215}",
     "build": "next build",
     "serve": "next start -H 0.0.0.0 -p ${PORT:-18215}",
     "typecheck": "tsc --noEmit"
   },
-  "name": "@workspace/blockify",
-  "version": "0.0.0",
-  "private": true,
-  "packageManager": "pnpm@10.26.1",
-  "scripts": {
-    ...
-  }
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.7",
     "@radix-ui/react-popover": "^1.1.7",
