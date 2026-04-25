@@ -15,7 +15,7 @@ A feature-rich, client-side ASCII art generator and canvas editor. Transform tex
 - **Live preview** — Instant rendering as you type
 - **Font search** — Filter through available fonts quickly
 - **Surprise me** — One-click random font + transform + color
-- **Text transforms** — leet (h3ll0), upside-down (oll∂Ɥ), small caps (ʜᴇʟʟᴏ), wide (H E L L O)
+- **Text transforms** — leet (h3ll0), wide (H E L L O)
 - **Animated output toggle** — turn the entrance animation on or off
 
 ### Image to ASCII
