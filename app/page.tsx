@@ -70,7 +70,7 @@ export default function HomePage() {
           >
             {mode === "generator"
               ? "Transform text and images into stunning ASCII art. 25+ fonts, 55+ templates, instant export."
-              : "Draw ASCII diagrams with boxes, lines, arrows, and text. 9 color schemes."}
+              : "Draw ASCII diagrams with boxes, lines, arrows, and text. 12 color schemes."}
           </motion.p>
         </section>
 
