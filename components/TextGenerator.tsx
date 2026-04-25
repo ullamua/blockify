@@ -11,25 +11,15 @@ import { ART_COLORS, type ArtColor, type ArtGradient } from "@/lib/colors";
 import ExportDialog from "./ExportDialog";
 import ColorPicker from "./ColorPicker";
 import { saveToGallery } from "./SavedGallery";
+import MatrixRain from "./MatrixRain";
 
 const BORDER_STYLES = ["none", "simple", "double", "rounded", "block"] as const;
 
-const TRANSFORMS = ["none", "leet", "upside", "smallcaps", "wide"] as const;
+const TRANSFORMS = ["none", "leet", "wide"] as const;
 type Transform = typeof TRANSFORMS[number];
 
 const LEET: Record<string, string> = {
   a: "4", e: "3", i: "1", o: "0", s: "5", t: "7", b: "8", g: "9", l: "1",
-};
-const UPSIDE: Record<string, string> = {
-  a: "ɐ", b: "q", c: "ɔ", d: "p", e: "ǝ", f: "ɟ", g: "ƃ", h: "ɥ", i: "ı",
-  j: "ɾ", k: "ʞ", l: "l", m: "ɯ", n: "u", o: "o", p: "d", q: "b", r: "ɹ",
-  s: "s", t: "ʇ", u: "n", v: "ʌ", w: "ʍ", x: "x", y: "ʎ", z: "z",
-  "?": "¿", "!": "¡", ".": "˙", ",": "'", "(": ")", ")": "(",
-};
-const SMALL: Record<string, string> = {
-  a: "ᴀ", b: "ʙ", c: "ᴄ", d: "ᴅ", e: "ᴇ", f: "ꜰ", g: "ɢ", h: "ʜ", i: "ɪ",
-  j: "ᴊ", k: "ᴋ", l: "ʟ", m: "ᴍ", n: "ɴ", o: "ᴏ", p: "ᴘ", q: "ǫ", r: "ʀ",
-  s: "s", t: "ᴛ", u: "ᴜ", v: "ᴠ", w: "ᴡ", x: "x", y: "ʏ", z: "ᴢ",
 };
 
 function applyTransform(s: string, t: Transform): string {
@@ -38,20 +28,12 @@ function applyTransform(s: string, t: Transform): string {
   if (t === "leet")
     return s
       .split("")
-      .map((ch) => LEET[ch.toLowerCase()] ?? ch)
-      .join("");
-  if (t === "upside")
-    return s
-      .toLowerCase()
-      .split("")
-      .map((ch) => UPSIDE[ch] ?? ch)
-      .reverse()
-      .join("");
-  if (t === "smallcaps")
-    return s
-      .toLowerCase()
-      .split("")
-      .map((ch) => SMALL[ch] ?? ch)
+      .map((ch) => {
+        const lower = ch.toLowerCase();
+        const mapped = LEET[lower];
+        if (!mapped) return ch;
+        return ch === lower ? mapped : mapped.toUpperCase();
+      })
       .join("");
   return s;
 }
@@ -75,13 +57,12 @@ export default function TextGenerator() {
       return;
     }
     try {
-      // Figlet only renders printable ASCII. If the transform produced any
-      // non-ASCII glyphs (smallcaps, upside-down, etc.), render the string
-      // directly so the user actually sees something.
-      const isAscii = /^[\x20-\x7E\n\r\t]*$/.test(transformed);
+      // Transforms (leet/upside/smallcaps/wide) are stylized text effects —
+      // render them as-is. Only run the original text through figlet when
+      // no transform is active, so users see the styled output they picked.
       let result: string;
-      if (isAscii) {
-        result = await textToAscii(transformed, font);
+      if (transform === "none") {
+        result = await textToAscii(text, font);
       } else {
         result = transformed;
       }
@@ -90,7 +71,7 @@ export default function TextGenerator() {
     } catch {
       setOutput("Error generating ASCII art");
     }
-  }, [transformed, font, border]);
+  }, [transformed, text, transform, font, border]);
 
   useEffect(() => {
     generate();
@@ -134,8 +115,10 @@ export default function TextGenerator() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-4"
+      className="relative space-y-4 rounded-lg overflow-hidden"
     >
+      <MatrixRain opacity={0.18} />
+      <div className="relative z-10 space-y-4">
       <div className="glass-card rounded-lg p-3 sm:p-4 space-y-3">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-primary font-mono text-sm">
@@ -285,6 +268,7 @@ export default function TextGenerator() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </motion.div>
   );
 }

@@ -5,28 +5,32 @@ import { motion } from "framer-motion";
 export default function BlockifyLogo() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: -10 }}
+      initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="flex flex-col items-center gap-2 select-none"
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className="flex flex-col items-center gap-2"
     >
-      <h1
-        className="font-mono text-4xl sm:text-6xl md:text-7xl font-bold tracking-widest text-primary"
-        style={{
-          textShadow:
-            "0 0 10px hsl(var(--primary) / 0.6), 0 0 24px hsl(var(--primary) / 0.3)",
-        }}
-        aria-label="BLOCKIFY"
-      >
-        BLOCKIFY
+      <h1 className="font-display text-4xl sm:text-5xl md:text-7xl font-black tracking-wider text-primary glow-text select-none">
+        {"BLOCKIFY".split("").map((char, i) => (
+          <motion.span
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08, duration: 0.4 }}
+            className="inline-block hover:animate-glitch"
+          >
+            {char}
+          </motion.span>
+        ))}
       </h1>
-      <div className="flex items-center gap-3">
-        <span className="h-px w-8 bg-border" />
-        <span className="font-mono text-[10px] sm:text-xs tracking-[0.4em] uppercase text-muted-foreground">
-          ASCII Art Studio
-        </span>
-        <span className="h-px w-8 bg-border" />
-      </div>
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.8 }}
+        className="font-mono text-xs sm:text-sm tracking-[0.3em] uppercase text-muted-foreground"
+      >
+        Block Your Art
+      </motion.p>
     </motion.div>
   );
 }
