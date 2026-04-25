@@ -29,9 +29,9 @@ const COLOR_SCHEMES = {
   midnight: { name: "Midnight", bg: "#0d0d1a", fg: "#b388ff", grid: "#15152a", accent: "#7c4dff", cursor: "#d1c4e9", dark: true },
   forest:   { name: "Forest",   bg: "#0a1a0a", fg: "#66bb6a", grid: "#102810", accent: "#43a047", cursor: "#a5d6a7", dark: true },
   // ── Light schemes ──
-  paper:    { name: "Paper",    bg: "#fafaf7", fg: "#1f2937", grid: "#e5e7eb", accent: "#10b981", cursor: "#0f766e", dark: false },
-  blueprint:{ name: "Blueprint",bg: "#eaf3ff", fg: "#0b3d91", grid: "#cfe1ff", accent: "#1d4ed8", cursor: "#1e40af", dark: false },
-  parchment:{ name: "Parchment",bg: "#fdf6e3", fg: "#5c4a1d", grid: "#ecdfb8", accent: "#b45309", cursor: "#92400e", dark: false },
+  paper:    { name: "Paper",    bg: "#fafaf7", fg: "#1f2937", grid: "#9ca3af", accent: "#10b981", cursor: "#0f766e", dark: false },
+  blueprint:{ name: "Blueprint",bg: "#eaf3ff", fg: "#0b3d91", grid: "#7aa6e6", accent: "#1d4ed8", cursor: "#1e40af", dark: false },
+  parchment:{ name: "Parchment",bg: "#fdf6e3", fg: "#5c4a1d", grid: "#c9b27a", accent: "#b45309", cursor: "#92400e", dark: false },
 } as const;
 
 type SchemeKey = keyof typeof COLOR_SCHEMES;
@@ -262,7 +262,7 @@ export default function AsciiCanvas() {
 
     if (showGrid && cellSize >= 4) {
       ctx.strokeStyle = colors.grid;
-      ctx.lineWidth = 0.5;
+      ctx.lineWidth = 1;
       ctx.beginPath();
       for (let x = 0; x <= GRID_W; x++) {
         const px = Math.round(x * cellSize) + 0.5;

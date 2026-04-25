@@ -75,7 +75,16 @@ export default function TextGenerator() {
       return;
     }
     try {
-      let result = await textToAscii(transformed, font);
+      // Figlet only renders printable ASCII. If the transform produced any
+      // non-ASCII glyphs (smallcaps, upside-down, etc.), render the string
+      // directly so the user actually sees something.
+      const isAscii = /^[\x20-\x7E\n\r\t]*$/.test(transformed);
+      let result: string;
+      if (isAscii) {
+        result = await textToAscii(transformed, font);
+      } else {
+        result = transformed;
+      }
       result = addBorder(result, border);
       setOutput(result);
     } catch {
