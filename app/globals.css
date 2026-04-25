@@ -34,32 +34,33 @@
     --glass-shine: linear-gradient(135deg, hsla(142, 100%, 50%, 0.1) 0%, transparent 50%, hsla(142, 100%, 50%, 0.05) 100%);
   }
 
-  .light {
-    --background: 140 10% 95%;
-    --foreground: 150 30% 10%;
-    --card: 140 10% 98%;
-    --card-foreground: 150 30% 10%;
-    --popover: 140 10% 98%;
-    --popover-foreground: 150 30% 10%;
-    --primary: 142 80% 35%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 140 10% 90%;
-    --secondary-foreground: 150 20% 20%;
-    --muted: 140 8% 88%;
-    --muted-foreground: 150 10% 40%;
-    --accent: 142 60% 40%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 80% 55%;
+  /* Purple-tinted "Night" theme — second flavor of dark mode */
+  .night {
+    --background: 270 35% 5%;
+    --foreground: 280 100% 88%;
+    --card: 270 30% 8%;
+    --card-foreground: 280 100% 88%;
+    --popover: 270 30% 8%;
+    --popover-foreground: 280 100% 88%;
+    --primary: 280 100% 65%;
+    --primary-foreground: 270 35% 5%;
+    --secondary: 270 25% 14%;
+    --secondary-foreground: 280 80% 80%;
+    --muted: 270 20% 16%;
+    --muted-foreground: 280 25% 60%;
+    --accent: 290 80% 55%;
+    --accent-foreground: 280 100% 92%;
+    --destructive: 0 80% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 140 10% 82%;
-    --input: 140 10% 85%;
-    --ring: 142 80% 35%;
+    --border: 280 35% 22%;
+    --input: 280 25% 18%;
+    --ring: 280 100% 65%;
 
-    --glow-primary: 0 0 15px hsla(142, 80%, 35%, 0.2);
-    --glow-strong: 0 0 25px hsla(142, 80%, 35%, 0.3);
-    --glass-bg: hsla(140, 10%, 98%, 0.8);
-    --glass-border: hsla(142, 80%, 35%, 0.2);
-    --glass-shine: linear-gradient(135deg, hsla(142, 80%, 35%, 0.08) 0%, transparent 50%);
+    --glow-primary: 0 0 20px hsla(280, 100%, 65%, 0.35), 0 0 60px hsla(280, 100%, 65%, 0.12);
+    --glow-strong: 0 0 30px hsla(280, 100%, 65%, 0.55), 0 0 80px hsla(280, 100%, 65%, 0.22);
+    --glass-bg: hsla(270, 30%, 8%, 0.7);
+    --glass-border: hsla(280, 100%, 65%, 0.2);
+    --glass-shine: linear-gradient(135deg, hsla(280, 100%, 65%, 0.12) 0%, transparent 50%, hsla(290, 80%, 55%, 0.06) 100%);
   }
 }
 
@@ -85,7 +86,7 @@
   }
 
   .glow-text {
-    text-shadow: 0 0 10px hsla(142, 100%, 50%, 0.6), 0 0 40px hsla(142, 100%, 50%, 0.2);
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.6), 0 0 40px hsl(var(--primary) / 0.2);
   }
 
   .glow-border {
@@ -101,8 +102,8 @@
       0deg,
       transparent,
       transparent 2px,
-      hsla(142, 100%, 50%, 0.03) 2px,
-      hsla(142, 100%, 50%, 0.03) 4px
+      hsl(var(--primary) / 0.03) 2px,
+      hsl(var(--primary) / 0.03) 4px
     );
     pointer-events: none;
   }

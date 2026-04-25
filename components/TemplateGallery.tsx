@@ -6,6 +6,7 @@ import { Shapes, Copy, Check, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TEMPLATES, TEMPLATE_NAMES, TEMPLATE_CATEGORIES } from "@/lib/templates";
+import ExportDialog from "./ExportDialog";
 
 export default function TemplateGallery() {
   const [copied, setCopied] = useState<string | null>(null);
@@ -68,16 +69,28 @@ export default function TemplateGallery() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.02 }}
-            className="glass-card rounded-lg p-3 hover:glow-border transition-shadow group cursor-pointer"
-            onClick={() => copyTemplate(name)}
+            className="glass-card rounded-lg p-3 hover:glow-border transition-shadow group"
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-xs text-foreground capitalize">{name.replace(/_/g, " ")}</span>
-              <span className="text-muted-foreground group-hover:text-primary transition-colors">
-                {copied === name ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-              </span>
+            <div className="flex items-center justify-between mb-2 gap-2">
+              <span className="font-mono text-xs text-foreground capitalize truncate">{name.replace(/_/g, " ")}</span>
+              <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => copyTemplate(name)}
+                  className="h-7 px-2 text-muted-foreground hover:text-primary"
+                  title="Copy"
+                >
+                  {copied === name ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                </Button>
+                <ExportDialog art={TEMPLATES[name].trim()} filename={`blockify-${name}`} />
+              </div>
             </div>
-            <pre className="font-mono text-[7px] leading-[1.15] text-primary/70 overflow-hidden whitespace-pre max-h-20">
+            <pre
+              className="font-mono text-[7px] leading-[1.15] text-primary/70 overflow-hidden whitespace-pre max-h-20 cursor-pointer"
+              onClick={() => copyTemplate(name)}
+              title="Click to copy"
+            >
               {TEMPLATES[name].trim()}
             </pre>
           </motion.div>

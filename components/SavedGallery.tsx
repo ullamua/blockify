@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Archive, Trash2, Copy, Check } from "lucide-react";
+import { Archive, Trash2, Copy, Check, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ExportDialog from "./ExportDialog";
 
 interface SavedArt {
   id: string;
@@ -24,6 +25,7 @@ export function saveToGallery(art: string, label: string) {
 export default function SavedGallery() {
   const [items, setItems] = useState<SavedArt[]>([]);
   const [copied, setCopied] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setItems(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
@@ -41,6 +43,9 @@ export default function SavedGallery() {
     setTimeout(() => setCopied(null), 2000);
   };
 
+  const toggleExpanded = (id: string) =>
+    setExpanded(e => ({ ...e, [id]: !e[id] }));
+
   if (items.length === 0) {
     return (
       <div className="glass-card rounded-lg p-8 text-center">
@@ -56,34 +61,72 @@ export default function SavedGallery() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
       <AnimatePresence>
-        {items.map((item, i) => (
-          <motion.div
-            key={item.id}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 10 }}
-            transition={{ delay: i * 0.03 }}
-            className="glass-card rounded-lg p-3 group"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <span className="font-mono text-xs text-foreground">{item.label}</span>
-                <span className="font-mono text-[10px] text-muted-foreground ml-2">{item.date}</span>
+        {items.map((item, i) => {
+          const isExpanded = !!expanded[item.id];
+          const slug = item.label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "art";
+          return (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 10 }}
+              transition={{ delay: i * 0.03 }}
+              className="glass-card rounded-lg p-3 group"
+            >
+              <div className="flex items-center justify-between mb-2 gap-2">
+                <div className="min-w-0 flex-1">
+                  <span className="font-mono text-xs text-foreground truncate block">{item.label}</span>
+                  <span className="font-mono text-[10px] text-muted-foreground">{item.date}</span>
+                </div>
+                <div className="flex gap-0.5 items-center shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleExpanded(item.id)}
+                    className="h-7 px-2 text-muted-foreground hover:text-primary text-xs"
+                    title={isExpanded ? "Collapse" : "Expand to see full art"}
+                  >
+                    {isExpanded ? <Minimize2 className="h-3 w-3" /> : <Maximize2 className="h-3 w-3" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copy(item.id, item.art)}
+                    className="h-7 px-2 text-muted-foreground hover:text-primary text-xs"
+                  >
+                    {copied === item.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  </Button>
+                  <ExportDialog art={item.art} filename={`blockify-${slug}`} />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => remove(item.id)}
+                    className="h-7 px-2 text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button variant="ghost" size="sm" onClick={() => copy(item.id, item.art)} className="h-6 text-muted-foreground hover:text-primary">
-                  {copied === item.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => remove(item.id)} className="h-6 text-muted-foreground hover:text-destructive">
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-            <pre className="font-mono text-[7px] leading-[1.1] text-primary/70 overflow-hidden whitespace-pre max-h-24">
-              {item.art}
-            </pre>
-          </motion.div>
-        ))}
+              <pre
+                className={`font-mono text-[7px] leading-[1.1] text-primary/70 whitespace-pre rounded bg-background/40 p-2 ${
+                  isExpanded
+                    ? "overflow-auto max-h-[60vh]"
+                    : "overflow-hidden max-h-24"
+                }`}
+              >
+                {item.art}
+              </pre>
+              {!isExpanded && item.art.split("\n").length > 8 && (
+                <button
+                  onClick={() => toggleExpanded(item.id)}
+                  className="mt-1 font-mono text-[10px] text-muted-foreground/70 hover:text-primary transition-colors"
+                >
+                  Preview cropped — tap expand to see full art ↑
+                </button>
+              )}
+            </motion.div>
+          );
+        })}
       </AnimatePresence>
     </motion.div>
   );

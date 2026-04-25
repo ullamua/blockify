@@ -4,14 +4,15 @@ import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Square, MousePointer, Pencil, ArrowUpRight, Minus, Type, Eraser,
-  Undo2, Redo2, Trash2, Download, Copy, Check, ZoomIn, ZoomOut,
-  Palette, Grid3X3
+  Undo2, Redo2, Trash2, Copy, Check, ZoomIn, ZoomOut,
+  Palette, Grid3X3, PaintBucket, Save, FolderOpen, Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
 import ExportDialog from "./ExportDialog";
 
 // ── Color Schemes ─────────────────────────────
@@ -50,7 +51,7 @@ const DRAW_SYMBOLS: Record<string, string[]> = {
 };
 
 // ── Types ─────────────────────────────────────
-type Tool = "box" | "select" | "freeform" | "arrow" | "line" | "text" | "eraser";
+type Tool = "box" | "select" | "freeform" | "arrow" | "line" | "text" | "eraser" | "fill";
 interface Point { x: number; y: number; }
 
 // Large grid so canvas never clips on zoom out
@@ -74,6 +75,16 @@ function createGrid(): string[][] {
 
 function cloneGrid(g: string[][]): string[][] {
   return g.map(r => [...r]);
+}
+
+// Stamp a (possibly multi-char) string at (x, y) horizontally, in-place.
+function stampAt(grid: string[][], x: number, y: number, str: string) {
+  if (!str) return;
+  for (let i = 0; i < str.length; i++) {
+    const cx = x + i;
+    if (cx < 0 || cx >= GRID_W || y < 0 || y >= GRID_H) continue;
+    grid[y][cx] = str[i];
+  }
 }
 
 function drawBox(grid: string[][], x1: number, y1: number, x2: number, y2: number, style: BoxStyle) {
@@ -124,6 +135,48 @@ function drawLine(grid: string[][], x1: number, y1: number, x2: number, y2: numb
   }
 }
 
+// Flood-fill from (x, y), replacing matching cells with `replace`.
+// `replace` may be a single char or a multi-char string — multi-char strings
+// are tiled across the filled region row-by-row.
+function floodFill(grid: string[][], x: number, y: number, replace: string) {
+  if (x < 0 || x >= GRID_W || y < 0 || y >= GRID_H) return;
+  const target = grid[y][x];
+  // Avoid no-op fills that would also infinite-loop on multi-char tiles.
+  if (replace.length === 1 && target === replace) return;
+  const visited: boolean[][] = Array.from({ length: GRID_H }, () => Array(GRID_W).fill(false));
+  const stack: Point[] = [{ x, y }];
+  const filled: Point[] = [];
+  while (stack.length) {
+    const p = stack.pop()!;
+    if (p.x < 0 || p.x >= GRID_W || p.y < 0 || p.y >= GRID_H) continue;
+    if (visited[p.y][p.x]) continue;
+    if (grid[p.y][p.x] !== target) continue;
+    visited[p.y][p.x] = true;
+    filled.push(p);
+    stack.push({ x: p.x + 1, y: p.y });
+    stack.push({ x: p.x - 1, y: p.y });
+    stack.push({ x: p.x, y: p.y + 1 });
+    stack.push({ x: p.x, y: p.y - 1 });
+  }
+  if (replace.length <= 1) {
+    const ch = replace || " ";
+    for (const p of filled) grid[p.y][p.x] = ch;
+  } else {
+    // Tile the string across each filled row, anchored at the leftmost
+    // filled cell of that row so the pattern reads consistently.
+    const rows: Record<number, number[]> = {};
+    for (const p of filled) (rows[p.y] ||= []).push(p.x);
+    for (const y of Object.keys(rows)) {
+      const yy = +y;
+      const xs = rows[yy].sort((a, b) => a - b);
+      const x0 = xs[0];
+      for (const x of xs) {
+        grid[yy][x] = replace[(x - x0) % replace.length];
+      }
+    }
+  }
+}
+
 export default function AsciiCanvas() {
   const [grid, setGrid] = useState<string[][]>(createGrid);
   const [history, setHistory] = useState<string[][][]>([]);
@@ -140,6 +193,8 @@ export default function AsciiCanvas() {
   const [selectEnd, setSelectEnd] = useState<Point | null>(null);
   const [drawChar, setDrawChar] = useState("*");
   const [showGrid, setShowGrid] = useState(true);
+  const [customSymbol, setCustomSymbol] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -372,6 +427,13 @@ export default function AsciiCanvas() {
   const handleStart = useCallback((pos: Point) => {
     if (pos.x < 0 || pos.x >= GRID_W || pos.y < 0 || pos.y >= GRID_H) return;
     if (tool === "text") { setTextPos(pos); setTextInput(""); return; }
+    if (tool === "fill") {
+      pushHistorySnapshot(cloneGrid(gridRef.current));
+      const g = cloneGrid(gridRef.current);
+      floodFill(g, pos.x, pos.y, drawChar || " ");
+      commitGrid(g);
+      return;
+    }
     if (tool === "select") {
       setSelectStart(pos);
       setSelectEnd(pos);
@@ -385,13 +447,14 @@ export default function AsciiCanvas() {
     lastCellRef.current = pos;
 
     if (tool === "freeform") {
-      gridRef.current[pos.y][pos.x] = drawChar;
+      // Multi-char drawChar: stamp the whole string starting at the cell.
+      stampAt(gridRef.current, pos.x, pos.y, drawChar);
       scheduleRedraw();
     } else if (tool === "eraser") {
       gridRef.current[pos.y][pos.x] = " ";
       scheduleRedraw();
     }
-  }, [tool, drawChar, scheduleRedraw]);
+  }, [tool, drawChar, scheduleRedraw, pushHistorySnapshot, commitGrid]);
 
   const handleMove = useCallback((pos: Point) => {
     if (!drawingRef.current) return;
@@ -409,7 +472,9 @@ export default function AsciiCanvas() {
 
       // Bresenham fill between last and current to handle fast strokes
       if (last) {
-        const ch = tool === "freeform" ? drawChar : " ";
+        // For multi-char freeform, just use the first char while dragging
+        // so the symbol doesn't repeat awkwardly along the stroke.
+        const ch = tool === "freeform" ? (drawChar[0] || "*") : " ";
         const dx = Math.abs(pos.x - last.x), dy = Math.abs(pos.y - last.y);
         const sx = last.x < pos.x ? 1 : -1, sy = last.y < pos.y ? 1 : -1;
         let err = dx - dy;
@@ -423,7 +488,7 @@ export default function AsciiCanvas() {
           if (e2 < dx) { err += dx; cy += sy; }
         }
       } else {
-        gridRef.current[pos.y][pos.x] = tool === "freeform" ? drawChar : " ";
+        gridRef.current[pos.y][pos.x] = tool === "freeform" ? (drawChar[0] || "*") : " ";
       }
       lastCellRef.current = pos;
       scheduleRedraw();
@@ -566,10 +631,85 @@ export default function AsciiCanvas() {
     { key: "box", icon: Square, label: "Box" },
     { key: "line", icon: Minus, label: "Line" },
     { key: "arrow", icon: ArrowUpRight, label: "Arrow" },
+    { key: "fill", icon: PaintBucket, label: "Fill" },
     { key: "text", icon: Type, label: "Text" },
     { key: "eraser", icon: Eraser, label: "Erase" },
     { key: "select", icon: MousePointer, label: "Select" },
   ];
+
+  // ── Project save / load (.blockify JSON) ─────────────
+  const saveProject = useCallback(() => {
+    const project = {
+      app: "blockify",
+      version: 1,
+      savedAt: new Date().toISOString(),
+      grid: gridRef.current,
+      scheme,
+      boxStyle,
+      drawChar,
+      showGrid,
+    };
+    const blob = new Blob([JSON.stringify(project)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `blockify-project-${Date.now()}.blockify`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }, [scheme, boxStyle, drawChar, showGrid]);
+
+  const loadProjectFile = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const text = String(reader.result || "");
+        // Accept .blockify JSON OR fall back to plain ASCII text files.
+        let nextGrid: string[][] | null = null;
+        try {
+          const data = JSON.parse(text);
+          if (data && Array.isArray(data.grid)) {
+            const g = createGrid();
+            for (let y = 0; y < Math.min(GRID_H, data.grid.length); y++) {
+              const row = data.grid[y];
+              if (!Array.isArray(row)) continue;
+              for (let x = 0; x < Math.min(GRID_W, row.length); x++) {
+                const ch = row[x];
+                if (typeof ch === "string" && ch.length >= 1) g[y][x] = ch[0];
+              }
+            }
+            nextGrid = g;
+            if (typeof data.scheme === "string" && data.scheme in COLOR_SCHEMES) {
+              setScheme(data.scheme as SchemeKey);
+            }
+            if (typeof data.boxStyle === "string" && data.boxStyle in BOX_CHARS) {
+              setBoxStyle(data.boxStyle as BoxStyle);
+            }
+            if (typeof data.drawChar === "string" && data.drawChar.length > 0) {
+              setDrawChar(data.drawChar);
+            }
+            if (typeof data.showGrid === "boolean") setShowGrid(data.showGrid);
+          }
+        } catch {
+          // not JSON — treat as plain text
+        }
+        if (!nextGrid) {
+          const lines = text.split(/\r?\n/);
+          const g = createGrid();
+          for (let y = 0; y < Math.min(GRID_H, lines.length); y++) {
+            const line = lines[y];
+            for (let x = 0; x < Math.min(GRID_W, line.length); x++) {
+              g[y][x] = line[x] || " ";
+            }
+          }
+          nextGrid = g;
+        }
+        pushHistorySnapshot(cloneGrid(gridRef.current));
+        commitGrid(nextGrid);
+      } catch {
+        // ignore malformed files silently
+      }
+    };
+    reader.readAsText(file);
+  }, [pushHistorySnapshot, commitGrid]);
 
   return (
     <motion.div
@@ -608,6 +748,38 @@ export default function AsciiCanvas() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-72 sm:w-80 p-0 glass-card border-border" align="start">
+                <div className="p-2 border-b border-border/40 space-y-1.5">
+                  <label className="font-mono text-[10px] text-muted-foreground uppercase tracking-wide">
+                    Custom symbol or text
+                  </label>
+                  <div className="flex gap-1">
+                    <Input
+                      value={customSymbol}
+                      onChange={(e) => setCustomSymbol(e.target.value)}
+                      placeholder='e.g. :3 or "hi"'
+                      className="h-7 text-xs font-mono bg-background/50"
+                      maxLength={32}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && customSymbol) {
+                          setDrawChar(customSymbol);
+                        }
+                      }}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-[10px] gap-1"
+                      onClick={() => customSymbol && setDrawChar(customSymbol)}
+                      disabled={!customSymbol}
+                    >
+                      <Plus className="h-3 w-3" />
+                      Use
+                    </Button>
+                  </div>
+                  <p className="font-mono text-[9px] text-muted-foreground/70">
+                    Click stamps the whole string. Drag uses just the first character.
+                  </p>
+                </div>
                 <Tabs defaultValue={Object.keys(DRAW_SYMBOLS)[0]} className="w-full">
                   <ScrollArea className="w-full">
                     <TabsList className="w-full h-auto flex flex-wrap gap-0.5 p-1.5 bg-transparent">
@@ -649,6 +821,12 @@ export default function AsciiCanvas() {
                 ))}
               </SelectContent>
             </Select>
+          )}
+
+          {tool === "fill" && (
+            <span className="font-mono text-[10px] text-muted-foreground hidden sm:inline">
+              Fills connected cells with <span className="text-primary">{drawChar || " "}</span>
+            </span>
           )}
         </div>
 
@@ -723,6 +901,40 @@ export default function AsciiCanvas() {
 
           <Button variant="ghost" size="sm" onClick={copyGrid} className="h-7 sm:h-8 px-1.5 sm:px-2 text-muted-foreground">
             {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
+          </Button>
+
+          <div className="h-5 w-px bg-border/50" />
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".blockify,.json,.txt,application/json,text/plain"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) loadProjectFile(f);
+              e.target.value = "";
+            }}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            className="h-7 sm:h-8 px-1.5 sm:px-2 text-muted-foreground hover:text-primary gap-1"
+            title="Open project (.blockify or .txt)"
+          >
+            <FolderOpen className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline text-[10px]">Open</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={saveProject}
+            className="h-7 sm:h-8 px-1.5 sm:px-2 text-muted-foreground hover:text-primary gap-1"
+            title="Save project as .blockify file"
+          >
+            <Save className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline text-[10px]">Save</span>
           </Button>
 
           <ExportDialog art={gridToString()} filename="blockify-canvas" />

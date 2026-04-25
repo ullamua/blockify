@@ -774,22 +774,337 @@ d b d b`,
   |  |||  |
   |  |||  |
    \\_|||_/`,
+
+  // ── More from the gallery (asciiart.eu inspired) ──
+  cat_long: `
+ /\\_/\\  (
+( ^.^ ) _)
+  \\"/  (
+( | | )
+(__d b__)`,
+
+  kitten: `
+   |\\__/,|   (\`\\
+ _.|o o  |_   ) )
+-(((---(((--------`,
+
+  cat_sleeping: `
+   |\\---/|
+   | o_o |
+    \\_^_/`,
+
+  alien_classic: `
+    .-"""-.
+   /  ~~~  \\
+  |  o   o  |
+  |    >    |
+   \\  ___  /
+    '-...-'`,
+
+  ufo: `
+        ___
+    ___/   \\___
+   <___________>
+      |  |  |
+      *  *  *`,
+
+  parrot: `
+    .--.
+   /    \\
+  | o  o |
+   \\ -- /
+   /====\\
+  /      \\
+ /        \\`,
+
+  rose: `
+      __@
+     C\\__/
+    {___/
+      ||
+     \\||/
+      ||`,
+
+  tulip: `
+   __
+  (  )
+ (    )
+  \\  /
+   ||
+   ||
+ \\\\||//`,
+
+  pine_tree: `
+      /\\
+     /  \\
+    /    \\
+   /      \\
+  /________\\
+      ||
+      ||`,
+
+  campfire: `
+     (  ,
+    ) ((
+   (   ))
+  ((  ( )
+   \\\\|//
+  __||||__`,
+
+  mountain_range: `
+        /\\
+       /  \\    /\\
+      /    \\  /  \\    /\\
+     /      \\/    \\  /  \\
+    /________________\\    \\__
+`,
+
+  dragon: `
+      /===-_---~~~~~~~~~------____
+     |===-~___                _,-'
+      -==\\\\\`                  \\\\,/
+          \\\`~~~~--,___          /
+         /         \\---~~\\\\___,/
+        /              ___    /
+       |             /    \\  /
+        \\___       _/      \\/
+            \\\`---'`,
+
+  pumpkin: `
+   _.--.
+  /    /
+ /    /__
+|   /'   \\
+|  /  o o |
+| | \\ ___ |
+ \\ |  vvv |
+  \\|_____/`,
+
+  ghost_friendly: `
+   .-.
+  (o o)
+  | O \\
+   \\   \\
+    \`~~~'`,
+
+  bat: `
+ _   ___   _
+( \\,/(o)\\,/ )
+ \\_/_) (_\\_/`,
+
+  shark: `
+                  ,-
+                ,'::|
+               /::::|
+             ,'::::o\\__
+           ,'::_:_,/_o)
+         ,-':;_:_;:::-.
+       ,'::|:_:_:::::::\\
+     ,'::::|:_;:::::::::\\
+   ,':::::::|:_;::::::::|
+  /:::::::::|:_;::::::::|
+ /:::::::::::\\:_;:::::::|`,
+
+  octopus: `
+        _---_
+       /     \\
+      | () () |
+       \\  ^  /
+      / \\___/ \\
+     / /|. .|\\ \\
+    ( ( | : | ) )
+     \\ \\|_:_|/ /
+      \\ \\|=|/ /`,
+
+  crab: `
+      v .   ._, |_  .,
+   \`-._\\/  .  \\ /    |/_
+      \\\\  _\\, y | \\//
+________ /__\\ \\^^/
+        /\\_\\\\  _      ____
+       /     \\\\/\\\\\\__/      \\__
+      /         \\\\\\__         \\\\
+`,
+
+  snake_long: `
+     _____
+   _/     \\_
+  / |     | \\
+ /  | o o |  \\
+|   |  V  |   |
+|    \\___/    |
+ \\___________/`,
+
+  hedgehog: `
+    .|||||||||.
+   ||||||||||||
+  /|||||||||||||\\
+ /||||||||||||||\\
+(_)((_)(_)(_)((_)`,
+
+  computer: `
+   .---------.
+   |  .---.  |
+   |  |   |  |
+   |  '---'  |
+   '----.----'
+        |
+   _____|_____`,
+
+  phone: `
+    _______
+   /       \\
+  | _______ |
+  ||       ||
+  ||       ||
+  ||_______||
+  |  ___   |
+  | |   |  |
+  '---------'`,
+
+  tv_set: `
+   ________________
+  |  ___________   |
+  | |           |  |
+  | |           |  |
+  | |___________|  |
+  |________________|
+        | |
+    ____|_|____`,
+
+  envelope: `
+   _________________
+  |\\               /|
+  | \\             / |
+  |  \\           /  |
+  |   \\         /   |
+  |    \\_______/    |
+  |_________________|`,
+
+  light_bulb: `
+      .---.
+     /     \\
+    | () () |
+     \\  ^  /
+      \\___/
+      |   |
+      |___|
+      |   |
+     |     |`,
+
+  smiley_big: `
+      .-""""-.
+    .'        '.
+   /   O    O   \\
+  :           \`  :
+  |     ____     |
+  :    \`----'    :
+   \\            /
+    '.        .'
+      '-....-'`,
+
+  middle_finger: `
+      .-.
+      | |
+      | |
+    _.| |._
+   |  | |  |
+   |__| |__|
+      | |
+      \\_/`,
+
+  arrow_right_big: `
+        \\\\
+         \\\\
+  ========\\\\
+  =========\\\\
+  =========//
+  ========//
+         //
+        //`,
+
+  divider_wave: `
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`,
+
+  divider_dots: `
+• • • • • • • • • • • • • • • • • • • • • • •`,
+
+  divider_double: `
+════════════════════════════════════════════`,
+
+  flame: `
+     )
+    ) \\
+   /   (
+  /     )
+  )    (
+ /      \\
+(  )    (
+ \\(______/`,
+
+  lightning_bolt: `
+      /\\
+     /  \\
+    /    \\
+   /______\\
+        /
+       /
+      /`,
+
+  question_box: `
+   ___________
+  |    ?      |
+  |     ?     |
+  |      ?    |
+  |___________|`,
+
+  checkmark_box: `
+   ___________
+  |       /   |
+  |      /    |
+  | \\   /     |
+  |  \\ /      |
+  |   v       |
+  |___________|`,
 };
 
 export const TEMPLATE_NAMES = Object.keys(TEMPLATES);
 
 // Category groupings for the gallery UI
 export const TEMPLATE_CATEGORIES: Record<string, string[]> = {
-  "Animals": ["cat", "dog", "bunny", "fish", "owl", "spider", "bear", "elephant", "butterfly", "dolphin", "penguin", "turtle", "whale", "frog", "snail"],
+  "Animals": [
+    "cat", "cat_long", "kitten", "cat_sleeping",
+    "dog", "bunny", "fish", "owl", "spider", "bear",
+    "elephant", "butterfly", "dolphin", "penguin", "turtle", "whale",
+    "frog", "snail", "parrot", "shark", "octopus", "crab",
+    "snake_long", "hedgehog", "bat",
+  ],
   "Symbols": ["heart", "star", "diamond", "music", "peace", "infinity", "yin_yang", "snowflake"],
-  "Faces": ["skull", "ghost", "alien", "robot", "happy", "tableflip", "unflip", "shrug", "lenny", "disapproval", "sparkle_eyes", "crying", "bear_face", "flower_face", "angry"],
-  "Objects": ["sword", "crown", "key", "coffee", "house", "rocket", "gamepad", "camera", "anchor", "trophy", "hourglass", "lock", "glasses", "lightbulb", "umbrella", "gift", "headphones", "pizza"],
-  "Nature": ["tree", "sun", "cloud", "mountain", "cactus", "flower", "wave", "rainbow", "leaf"],
-  "Gaming": ["sword_shield", "mushroom", "pacman", "invader", "creeper", "pokeball", "controller", "chest"],
-  "Decorations": ["banner", "scroll", "box_fancy", "ribbon", "frame_ornate", "terminal", "speech_bubble"],
-  "Vehicles": ["car", "plane", "ship", "bicycle", "train"],
+  "Faces": [
+    "skull", "ghost", "ghost_friendly", "alien", "alien_classic", "robot",
+    "happy", "smiley_big", "tableflip", "unflip", "shrug", "lenny",
+    "disapproval", "sparkle_eyes", "crying", "bear_face", "flower_face", "angry",
+  ],
+  "Objects": [
+    "sword", "crown", "key", "coffee", "house", "rocket", "gamepad",
+    "camera", "anchor", "trophy", "hourglass", "lock", "glasses",
+    "lightbulb", "light_bulb", "umbrella", "gift", "headphones", "pizza",
+    "envelope", "pumpkin",
+  ],
+  "Nature": [
+    "tree", "pine_tree", "sun", "cloud", "mountain", "mountain_range",
+    "cactus", "flower", "wave", "rainbow", "leaf", "rose", "tulip",
+    "campfire", "flame", "lightning_bolt",
+  ],
+  "Gaming": ["sword_shield", "mushroom", "pacman", "invader", "creeper", "pokeball", "controller", "chest", "dragon"],
+  "Decorations": [
+    "banner", "scroll", "box_fancy", "ribbon", "frame_ornate", "terminal",
+    "speech_bubble", "divider_wave", "divider_dots", "divider_double",
+    "question_box", "checkmark_box",
+  ],
+  "Vehicles": ["car", "plane", "ship", "bicycle", "train", "ufo"],
   "Characters": ["wizard", "ninja", "lightning", "astronaut", "pirate"],
-  "Tech": ["cursor", "code_brackets", "binary", "wifi"],
+  "Tech": ["cursor", "code_brackets", "binary", "wifi", "computer", "phone", "tv_set"],
   "Food": ["ice_cream", "cake", "apple"],
-  "Emotions": ["thumbs_up", "clap", "wave_hand"],
+  "Emotions": ["thumbs_up", "clap", "wave_hand", "middle_finger", "arrow_right_big"],
 };
