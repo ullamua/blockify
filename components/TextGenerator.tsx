@@ -57,15 +57,9 @@ export default function TextGenerator() {
       return;
     }
     try {
-      // Transforms (leet/upside/smallcaps/wide) are stylized text effects —
-      // render them as-is. Only run the original text through figlet when
-      // no transform is active, so users see the styled output they picked.
-      let result: string;
-      if (transform === "none") {
-        result = await textToAscii(text, font);
-      } else {
-        result = transformed;
-      }
+      // Apply the selected transform first, then render through figlet.
+      // Leet and wide stay ASCII-safe, so every font can render them properly.
+      let result = await textToAscii(transformed, font);
       result = addBorder(result, border);
       setOutput(result);
     } catch {
