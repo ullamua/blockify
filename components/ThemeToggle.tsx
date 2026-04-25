@@ -1,36 +1,71 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Moon, Sparkles } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Moon, Sparkles, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-type Mode = "matrix" | "night";
+export type ThemeMode = "matrix" | "night" | "light";
 const STORAGE_KEY = "blockify-theme";
+const EVENT = "blockify-theme-change";
+
+function applyTheme(mode: ThemeMode) {
+  const root = document.documentElement;
+  root.classList.remove("night", "light");
+  if (mode === "night") root.classList.add("night");
+  else if (mode === "light") root.classList.add("light");
+}
+
+/** Subscribe to theme changes from anywhere in the tree. */
+export function useTheme(): ThemeMode {
+  const [mode, setMode] = useState<ThemeMode>("matrix");
+  useEffect(() => {
+    const stored = (typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY)) as ThemeMode | null;
+    if (stored === "night" || stored === "matrix" || stored === "light") setMode(stored);
+    const handler = (e: Event) => setMode((e as CustomEvent<ThemeMode>).detail);
+    window.addEventListener(EVENT, handler as EventListener);
+    return () => window.removeEventListener(EVENT, handler as EventListener);
+  }, []);
+  return mode;
+}
+
+const ORDER: ThemeMode[] = ["matrix", "night", "light"];
+const NEXT_LABEL: Record<ThemeMode, string> = {
+  matrix: "Switch to Night",
+  night: "Switch to Light",
+  light: "Switch to Matrix",
+};
 
 export default function ThemeToggle() {
-  const [mode, setMode] = useState<Mode>("matrix");
+  const [mode, setMode] = useState<ThemeMode>("matrix");
 
   useEffect(() => {
-    const stored = (typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY)) as Mode | null;
-    if (stored === "night" || stored === "matrix") setMode(stored);
+    const stored = (typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY)) as ThemeMode | null;
+    if (stored === "night" || stored === "matrix" || stored === "light") setMode(stored);
   }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("night", mode === "night");
-    if (typeof window !== "undefined") localStorage.setItem(STORAGE_KEY, mode);
+    applyTheme(mode);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY, mode);
+      window.dispatchEvent(new CustomEvent<ThemeMode>(EVENT, { detail: mode }));
+    }
   }, [mode]);
 
-  const toggle = () => setMode(m => (m === "matrix" ? "night" : "matrix"));
+  const cycle = useCallback(() => {
+    setMode((m) => ORDER[(ORDER.indexOf(m) + 1) % ORDER.length]);
+  }, []);
+
+  const Icon = mode === "matrix" ? Sparkles : mode === "night" ? Moon : Sun;
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      onClick={toggle}
+      onClick={cycle}
       className="text-muted-foreground hover:text-primary"
-      title={mode === "matrix" ? "Switch to Night theme" : "Switch to Matrix theme"}
+      title={NEXT_LABEL[mode]}
     >
-      {mode === "matrix" ? <Sparkles className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      <Icon className="h-4 w-4" />
     </Button>
   );
 }

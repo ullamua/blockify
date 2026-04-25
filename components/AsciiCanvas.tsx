@@ -14,18 +14,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import ExportDialog from "./ExportDialog";
+import { useTheme } from "./ThemeToggle";
 
 // ── Color Schemes ─────────────────────────────
+// Each scheme has a `dark` flag for icon hinting; light schemes use lighter surfaces.
 const COLOR_SCHEMES = {
-  matrix: { name: "Matrix", bg: "#050c08", fg: "#00ff41", grid: "#0a1f0f", accent: "#00cc33", cursor: "#00ff41" },
-  ocean: { name: "Ocean", bg: "#0a1628", fg: "#64b5f6", grid: "#0f2240", accent: "#42a5f5", cursor: "#90caf9" },
-  sunset: { name: "Sunset", bg: "#1a0a0a", fg: "#ff8a65", grid: "#2a1515", accent: "#ff7043", cursor: "#ffab91" },
-  vapor: { name: "Vapor", bg: "#1a0a2e", fg: "#e040fb", grid: "#200f3a", accent: "#ea80fc", cursor: "#f8bbd0" },
-  amber: { name: "Amber", bg: "#1a1400", fg: "#ffb300", grid: "#2a2200", accent: "#ffc107", cursor: "#ffe082" },
-  arctic: { name: "Arctic", bg: "#0a1a1a", fg: "#80deea", grid: "#0f2828", accent: "#4dd0e1", cursor: "#b2ebf2" },
-  blood: { name: "Blood", bg: "#1a0505", fg: "#ef5350", grid: "#2a0f0f", accent: "#e53935", cursor: "#ef9a9a" },
-  midnight: { name: "Midnight", bg: "#0d0d1a", fg: "#b388ff", grid: "#15152a", accent: "#7c4dff", cursor: "#d1c4e9" },
-  forest: { name: "Forest", bg: "#0a1a0a", fg: "#66bb6a", grid: "#102810", accent: "#43a047", cursor: "#a5d6a7" },
+  matrix:   { name: "Matrix",   bg: "#050c08", fg: "#00ff41", grid: "#0a1f0f", accent: "#00cc33", cursor: "#00ff41", dark: true },
+  ocean:    { name: "Ocean",    bg: "#0a1628", fg: "#64b5f6", grid: "#0f2240", accent: "#42a5f5", cursor: "#90caf9", dark: true },
+  sunset:   { name: "Sunset",   bg: "#1a0a0a", fg: "#ff8a65", grid: "#2a1515", accent: "#ff7043", cursor: "#ffab91", dark: true },
+  vapor:    { name: "Vapor",    bg: "#1a0a2e", fg: "#e040fb", grid: "#200f3a", accent: "#ea80fc", cursor: "#f8bbd0", dark: true },
+  amber:    { name: "Amber",    bg: "#1a1400", fg: "#ffb300", grid: "#2a2200", accent: "#ffc107", cursor: "#ffe082", dark: true },
+  arctic:   { name: "Arctic",   bg: "#0a1a1a", fg: "#80deea", grid: "#0f2828", accent: "#4dd0e1", cursor: "#b2ebf2", dark: true },
+  blood:    { name: "Blood",    bg: "#1a0505", fg: "#ef5350", grid: "#2a0f0f", accent: "#e53935", cursor: "#ef9a9a", dark: true },
+  midnight: { name: "Midnight", bg: "#0d0d1a", fg: "#b388ff", grid: "#15152a", accent: "#7c4dff", cursor: "#d1c4e9", dark: true },
+  forest:   { name: "Forest",   bg: "#0a1a0a", fg: "#66bb6a", grid: "#102810", accent: "#43a047", cursor: "#a5d6a7", dark: true },
+  // ── Light schemes ──
+  paper:    { name: "Paper",    bg: "#fafaf7", fg: "#1f2937", grid: "#e5e7eb", accent: "#10b981", cursor: "#0f766e", dark: false },
+  blueprint:{ name: "Blueprint",bg: "#eaf3ff", fg: "#0b3d91", grid: "#cfe1ff", accent: "#1d4ed8", cursor: "#1e40af", dark: false },
+  parchment:{ name: "Parchment",bg: "#fdf6e3", fg: "#5c4a1d", grid: "#ecdfb8", accent: "#b45309", cursor: "#92400e", dark: false },
 } as const;
 
 type SchemeKey = keyof typeof COLOR_SCHEMES;
@@ -77,14 +83,12 @@ function cloneGrid(g: string[][]): string[][] {
   return g.map(r => [...r]);
 }
 
-// Stamp a (possibly multi-char) string at (x, y) horizontally, in-place.
+// Stamp a string into a SINGLE cell as one atomic glyph (e.g. ":3" → one cell).
+// This lets multi-character symbols be painted / erased / measured as a single unit.
 function stampAt(grid: string[][], x: number, y: number, str: string) {
   if (!str) return;
-  for (let i = 0; i < str.length; i++) {
-    const cx = x + i;
-    if (cx < 0 || cx >= GRID_W || y < 0 || y >= GRID_H) continue;
-    grid[y][cx] = str[i];
-  }
+  if (x < 0 || x >= GRID_W || y < 0 || y >= GRID_H) return;
+  grid[y][x] = str;
 }
 
 function drawBox(grid: string[][], x1: number, y1: number, x2: number, y2: number, style: BoxStyle) {
@@ -135,45 +139,25 @@ function drawLine(grid: string[][], x1: number, y1: number, x2: number, y2: numb
   }
 }
 
-// Flood-fill from (x, y), replacing matching cells with `replace`.
-// `replace` may be a single char or a multi-char string — multi-char strings
-// are tiled across the filled region row-by-row.
+// Flood-fill from (x, y), replacing matching cells with `replace` (atomic per cell).
 function floodFill(grid: string[][], x: number, y: number, replace: string) {
   if (x < 0 || x >= GRID_W || y < 0 || y >= GRID_H) return;
   const target = grid[y][x];
-  // Avoid no-op fills that would also infinite-loop on multi-char tiles.
-  if (replace.length === 1 && target === replace) return;
+  const fill = replace || " ";
+  if (target === fill) return;
   const visited: boolean[][] = Array.from({ length: GRID_H }, () => Array(GRID_W).fill(false));
   const stack: Point[] = [{ x, y }];
-  const filled: Point[] = [];
   while (stack.length) {
     const p = stack.pop()!;
     if (p.x < 0 || p.x >= GRID_W || p.y < 0 || p.y >= GRID_H) continue;
     if (visited[p.y][p.x]) continue;
     if (grid[p.y][p.x] !== target) continue;
     visited[p.y][p.x] = true;
-    filled.push(p);
+    grid[p.y][p.x] = fill;
     stack.push({ x: p.x + 1, y: p.y });
     stack.push({ x: p.x - 1, y: p.y });
     stack.push({ x: p.x, y: p.y + 1 });
     stack.push({ x: p.x, y: p.y - 1 });
-  }
-  if (replace.length <= 1) {
-    const ch = replace || " ";
-    for (const p of filled) grid[p.y][p.x] = ch;
-  } else {
-    // Tile the string across each filled row, anchored at the leftmost
-    // filled cell of that row so the pattern reads consistently.
-    const rows: Record<number, number[]> = {};
-    for (const p of filled) (rows[p.y] ||= []).push(p.x);
-    for (const y of Object.keys(rows)) {
-      const yy = +y;
-      const xs = rows[yy].sort((a, b) => a - b);
-      const x0 = xs[0];
-      for (const x of xs) {
-        grid[yy][x] = replace[(x - x0) % replace.length];
-      }
-    }
   }
 }
 
@@ -210,7 +194,12 @@ export default function AsciiCanvas() {
   const lastCellRef = useRef<Point | null>(null);
   const dragRectRef = useRef<DOMRect | null>(null);
   const baseGridRef = useRef<string[][] | null>(null); // snapshot before stroke
+  const previewRef = useRef<string[][] | null>(null);  // live preview during box/line drag (no React re-renders)
   const rafRef = useRef<number | null>(null);
+
+  // Global theme (light / matrix / night) — used to auto-pick a sensible default canvas scheme
+  const themeMode = useTheme();
+  const userPickedSchemeRef = useRef(false);
 
   // Mirror state in a ref so the rAF paint loop can read latest values
   // without forcing a React re-render on every frame.
@@ -300,7 +289,7 @@ export default function AsciiCanvas() {
       ctx.strokeRect(sx * cellSize, sy * cellSize, sw * cellSize, sh * cellSize);
     }
 
-    const displayGrid = previewGrid || gridRef.current;
+    const displayGrid = previewRef.current || previewGrid || gridRef.current;
     ctx.fillStyle = colors.fg;
     ctx.font = `${Math.max(8, cellSize - 2)}px "JetBrains Mono", monospace`;
     ctx.textBaseline = "middle";
@@ -414,6 +403,21 @@ export default function AsciiCanvas() {
     paint();
   }, [paint, grid, previewGrid, cellSize, colors, textPos, textInput, selectStart, selectEnd, showGrid]);
 
+  // Auto-pick a scheme that matches the global theme on first switch.
+  // If the user has explicitly chosen a scheme, leave it alone.
+  useEffect(() => {
+    if (userPickedSchemeRef.current) return;
+    const isLightScheme = !COLOR_SCHEMES[scheme].dark;
+    if (themeMode === "light" && !isLightScheme) setScheme("paper");
+    else if (themeMode === "matrix" && isLightScheme) setScheme("matrix");
+    else if (themeMode === "night" && isLightScheme) setScheme("midnight");
+  }, [themeMode, scheme]);
+
+  const pickScheme = useCallback((s: SchemeKey) => {
+    userPickedSchemeRef.current = true;
+    setScheme(s);
+  }, []);
+
   // ── Position getter (uses cached rect during drag) ──
   const getCellPosFromEvent = useCallback((clientX: number, clientY: number): Point => {
     const rect = dragRectRef.current ?? canvasRef.current!.getBoundingClientRect();
@@ -470,25 +474,25 @@ export default function AsciiCanvas() {
       const last = lastCellRef.current;
       if (last && last.x === pos.x && last.y === pos.y) return;
 
+      // Whole multi-char drawChar is treated as ONE atomic glyph per cell.
+      const stamp = tool === "freeform" ? (drawChar || "*") : " ";
+
       // Bresenham fill between last and current to handle fast strokes
       if (last) {
-        // For multi-char freeform, just use the first char while dragging
-        // so the symbol doesn't repeat awkwardly along the stroke.
-        const ch = tool === "freeform" ? (drawChar[0] || "*") : " ";
         const dx = Math.abs(pos.x - last.x), dy = Math.abs(pos.y - last.y);
         const sx = last.x < pos.x ? 1 : -1, sy = last.y < pos.y ? 1 : -1;
         let err = dx - dy;
         let cx = last.x, cy = last.y;
         const g = gridRef.current;
         while (true) {
-          if (cy >= 0 && cy < GRID_H && cx >= 0 && cx < GRID_W) g[cy][cx] = ch;
+          if (cy >= 0 && cy < GRID_H && cx >= 0 && cx < GRID_W) g[cy][cx] = stamp;
           if (cx === pos.x && cy === pos.y) break;
           const e2 = 2 * err;
           if (e2 > -dy) { err -= dy; cx += sx; }
           if (e2 < dx) { err += dx; cy += sy; }
         }
       } else {
-        gridRef.current[pos.y][pos.x] = tool === "freeform" ? (drawChar[0] || "*") : " ";
+        gridRef.current[pos.y][pos.x] = stamp;
       }
       lastCellRef.current = pos;
       scheduleRedraw();
@@ -500,10 +504,13 @@ export default function AsciiCanvas() {
       const last = lastCellRef.current;
       if (last && last.x === pos.x && last.y === pos.y) return;
       lastCellRef.current = pos;
+      // Build the live preview into a ref so we don't trigger React re-renders
+      // for every pointer move during a drag (huge perf win on large grids).
       const preview = cloneGrid(baseGridRef.current ?? gridRef.current);
       if (tool === "box") drawBox(preview, startPos.x, startPos.y, pos.x, pos.y, boxStyle);
       else drawLine(preview, startPos.x, startPos.y, pos.x, pos.y, tool === "arrow");
-      setPreviewGrid(preview);
+      previewRef.current = preview;
+      scheduleRedraw();
     }
   }, [tool, drawChar, boxStyle, scheduleRedraw]);
 
@@ -530,6 +537,7 @@ export default function AsciiCanvas() {
       commitGrid(gridRef.current.map(r => r.slice()));
     }
 
+    previewRef.current = null;
     setPreviewGrid(null);
     startPosRef.current = null;
     lastCellRef.current = null;
@@ -673,7 +681,7 @@ export default function AsciiCanvas() {
               if (!Array.isArray(row)) continue;
               for (let x = 0; x < Math.min(GRID_W, row.length); x++) {
                 const ch = row[x];
-                if (typeof ch === "string" && ch.length >= 1) g[y][x] = ch[0];
+                if (typeof ch === "string" && ch.length >= 1) g[y][x] = ch;
               }
             }
             nextGrid = g;
@@ -862,18 +870,38 @@ export default function AsciiCanvas() {
                 <span className="w-2 h-2 rounded-full" style={{ background: colors.fg }} />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-48 p-2 glass-card border-border" align="start">
-              <div className="grid gap-1">
-                {Object.entries(COLOR_SCHEMES).map(([key, s]) => (
-                  <button
-                    key={key}
-                    className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-mono transition-all ${scheme === key ? "bg-primary/15 text-primary" : "hover:bg-secondary text-foreground"}`}
-                    onClick={() => setScheme(key as SchemeKey)}
-                  >
-                    <span className="w-3 h-3 rounded-full" style={{ background: s.fg }} />
-                    {s.name}
-                  </button>
-                ))}
+            <PopoverContent className="w-52 p-2 glass-card border-border" align="start">
+              <div className="space-y-2">
+                <div>
+                  <div className="px-2 pb-1 text-[9px] uppercase tracking-wider text-muted-foreground/70 font-mono">Dark</div>
+                  <div className="grid gap-0.5">
+                    {Object.entries(COLOR_SCHEMES).filter(([, s]) => s.dark).map(([key, s]) => (
+                      <button
+                        key={key}
+                        className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-mono transition-all ${scheme === key ? "bg-primary/15 text-primary" : "hover:bg-secondary text-foreground"}`}
+                        onClick={() => pickScheme(key as SchemeKey)}
+                      >
+                        <span className="w-3 h-3 rounded-full" style={{ background: s.fg }} />
+                        {s.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="border-t border-border/40 pt-1">
+                  <div className="px-2 pb-1 text-[9px] uppercase tracking-wider text-muted-foreground/70 font-mono">Light</div>
+                  <div className="grid gap-0.5">
+                    {Object.entries(COLOR_SCHEMES).filter(([, s]) => !s.dark).map(([key, s]) => (
+                      <button
+                        key={key}
+                        className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-mono transition-all ${scheme === key ? "bg-primary/15 text-primary" : "hover:bg-secondary text-foreground"}`}
+                        onClick={() => pickScheme(key as SchemeKey)}
+                      >
+                        <span className="w-3 h-3 rounded-full border border-border" style={{ background: s.fg }} />
+                        {s.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </PopoverContent>
           </Popover>

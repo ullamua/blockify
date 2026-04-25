@@ -34,6 +34,35 @@
     --glass-shine: linear-gradient(135deg, hsla(142, 100%, 50%, 0.1) 0%, transparent 50%, hsla(142, 100%, 50%, 0.05) 100%);
   }
 
+  /* "Light" theme — bright paper feel with a green accent */
+  .light {
+    --background: 150 30% 97%;
+    --foreground: 150 30% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 150 30% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 30% 12%;
+    --primary: 142 80% 32%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 150 20% 92%;
+    --secondary-foreground: 150 30% 18%;
+    --muted: 150 15% 90%;
+    --muted-foreground: 150 12% 38%;
+    --accent: 142 60% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 150 15% 82%;
+    --input: 150 15% 88%;
+    --ring: 142 80% 32%;
+
+    --glow-primary: 0 0 16px hsla(142, 80%, 32%, 0.18), 0 0 40px hsla(142, 80%, 32%, 0.08);
+    --glow-strong: 0 0 22px hsla(142, 80%, 32%, 0.28), 0 0 60px hsla(142, 80%, 32%, 0.12);
+    --glass-bg: hsla(0, 0%, 100%, 0.75);
+    --glass-border: hsla(142, 80%, 32%, 0.2);
+    --glass-shine: linear-gradient(135deg, hsla(142, 80%, 32%, 0.06) 0%, transparent 50%, hsla(142, 80%, 32%, 0.03) 100%);
+  }
+
   /* Purple-tinted "Night" theme — second flavor of dark mode */
   .night {
     --background: 270 35% 5%;
