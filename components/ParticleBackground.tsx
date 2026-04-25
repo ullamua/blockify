@@ -20,23 +20,6 @@ export default function ParticleBackground() {
     const fontSize = 14;
     let paused = document.hidden;
 
-    // Theme-reactive colors: read from CSS custom properties so the rain
-    // matches the active theme (Matrix / Night / Light).
-    let trail = "rgba(5, 12, 8, 0.08)";
-    let glyphFill = "hsla(142, 100%, 50%, 0.15)";
-    function refreshColors() {
-      const cs = getComputedStyle(document.documentElement);
-      const bg = cs.getPropertyValue("--background").trim();
-      const primary = cs.getPropertyValue("--primary").trim();
-      const isLight = document.documentElement.classList.contains("light");
-      if (bg) trail = `hsla(${bg}, ${isLight ? 0.18 : 0.08})`;
-      if (primary) glyphFill = `hsla(${primary}, ${isLight ? 0.22 : 0.18})`;
-    }
-    refreshColors();
-
-    const themeObserver = new MutationObserver(refreshColors);
-    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-
     function resize() {
       // Cap pixel dimensions to keep this background cheap on large displays
       canvas!.width = Math.min(window.innerWidth, 1600);
@@ -63,9 +46,9 @@ export default function ParticleBackground() {
       if (t - lastT < FRAME_MS) return;
       lastT = t;
 
-      ctx!.fillStyle = trail;
+      ctx!.fillStyle = "rgba(5, 12, 8, 0.08)";
       ctx!.fillRect(0, 0, canvas!.width, canvas!.height);
-      ctx!.fillStyle = glyphFill;
+      ctx!.fillStyle = "hsla(142, 100%, 50%, 0.15)";
       ctx!.font = `${fontSize}px JetBrains Mono`;
 
       for (let i = 0; i < columns.length; i++) {
@@ -81,7 +64,6 @@ export default function ParticleBackground() {
     animId = requestAnimationFrame(draw);
     return () => {
       cancelAnimationFrame(animId);
-      themeObserver.disconnect();
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", onVis);
     };
