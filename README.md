@@ -2,7 +2,7 @@
 
 A feature-rich, client-side ASCII art generator and canvas editor. Transform text and images into ASCII art, browse handcrafted templates, or draw your own diagrams on an interactive canvas — all in the browser with zero backend dependencies.
 
-![Blockify](https://img.shields.io/badge/version-3.1.0-green) ![License](https://img.shields.io/badge/license-MIT-blue)
+![Blockify](https://img.shields.io/badge/version-1.0.0-green) ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ---
 
