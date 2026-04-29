@@ -127,7 +127,7 @@ export default function HomePage() {
 
         <footer className="border-t border-border/30 py-4 sm:py-6 text-center">
           <p className="font-mono text-[9px] sm:text-[10px] text-muted-foreground/50">
-            BLOCKIFY — Block Your Art
+            BLOCKIFY - Block Your Art
           </p>
         </footer>
       </div>
